@@ -50,7 +50,6 @@
 
 class GpGpuApp : public ci::app::AppBasic
 {
-
 public:
 	void				draw();
 	void				keyDown( ci::app::KeyEvent event );

@@ -131,9 +131,9 @@
 		29B97315FDCFA39411CA2CEA /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				32CA4F630368D1EE00C91783 /* GpGpu_Prefix.pch */,
 				BFDEC9EC1616881300C8F38D /* GpGpuApp.h */,
 				BFDEC9ED1616881300C8F38D /* Resources.h */,
-				32CA4F630368D1EE00C91783 /* GpGpu_Prefix.pch */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -143,10 +143,10 @@
 			children = (
 				BFDEC9E0161687F500C8F38D /* CinderApp.icns */,
 				BFDEC9E1161687F500C8F38D /* gpgpu_frag.glsl */,
+				8D1107310486CEB800E47090 /* Info.plist */,
 				BFDEC9E2161687F500C8F38D /* passThru_vert.glsl */,
 				BFDEC9E3161687F500C8F38D /* refraction_frag.glsl */,
 				BFDEC9E4161687F500C8F38D /* texture.jpg */,
-				8D1107310486CEB800E47090 /* Info.plist */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
