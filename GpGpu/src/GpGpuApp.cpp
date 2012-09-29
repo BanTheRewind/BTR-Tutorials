@@ -35,9 +35,7 @@
 
 #include "GpGpuApp.h"
 
-#include "cinder/Color.h"
 #include "cinder/ImageIo.h"
-#include "cinder/Utilities.h"
 #include "Resources.h"
 
 using namespace ci;
@@ -200,7 +198,7 @@ void GpGpuApp::mouseUp( MouseEvent event )
 	mMouseDown = false;
 }
 
-void GpGpuApp::prepareSettings(Settings *settings)
+void GpGpuApp::prepareSettings( Settings *settings )
 {
 	settings->setWindowSize( kWindowSize.x, kWindowSize.y );
 	settings->setFrameRate( 60.0f );

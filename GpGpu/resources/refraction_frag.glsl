@@ -7,7 +7,7 @@ varying vec2		uv;		// Texture coordinate
 void main( void )
 {
 	// Calculate refraction
-	vec3 above		= texture2D( buffer, uv + vec2( 0.0, -pixel.y ) ).rgb;
+	vec2 above		= texture2D( buffer, uv + vec2( 0.0, -pixel.y ) ).rg;
 	float x			= above.g - texture2D( buffer, uv + vec2( pixel.x, 0.0 ) ).g;
 	float y			= above.r - texture2D( buffer, uv + vec2( 0.0, pixel.y ) ).r;
 

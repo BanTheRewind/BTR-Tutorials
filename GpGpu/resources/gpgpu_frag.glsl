@@ -49,8 +49,11 @@ void main( void )
 	vel				+= getSpring( height, uv + kernel * vec2( -2.0, -3.0 ), 0.0022411859348636983 * power );
 
 	// Update this pixel's height (red channel)
-	height			= color.r + vel;
+	height			+= vel;
+	
+	// Reduce the velocity
+	vel				*= dampen;
 
 	// Store the height and velocity in the red and green channels
-	gl_FragColor	= vec4( height, vel * dampen, 0.0, 1.0 );
+	gl_FragColor	= vec4( height, vel, 0.0, 1.0 );
 }
