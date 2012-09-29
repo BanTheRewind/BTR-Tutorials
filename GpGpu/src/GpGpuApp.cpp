@@ -38,6 +38,7 @@
 #include "cinder/Color.h"
 #include "cinder/ImageIo.h"
 #include "cinder/Utilities.h"
+#include "Resources.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -46,7 +47,6 @@ using namespace std;
 const Vec2i	kWindowSize	= Vec2i( 700, 700 );
 const Vec2f	kPixel		= Vec2f::one() / Vec2f( kWindowSize );
 
-// Draw
 void GpGpuApp::draw()
 {
 	///////////////////////////////////////////////////////////////
@@ -172,7 +172,6 @@ void GpGpuApp::drawFullScreenRect()
 	gl::end();
 }
 
-// Handles key press
 void GpGpuApp::keyDown( KeyEvent event )
 {
 	switch ( event.getCode() ) {		
@@ -201,7 +200,6 @@ void GpGpuApp::mouseUp( MouseEvent event )
 	mMouseDown = false;
 }
 
-// Sets up screen
 void GpGpuApp::prepareSettings(Settings *settings)
 {
 	settings->setWindowSize( kWindowSize.x, kWindowSize.y );
@@ -209,7 +207,6 @@ void GpGpuApp::prepareSettings(Settings *settings)
 	settings->setResizable( false );
 }
 
-// Set up
 void GpGpuApp::setup()
 {
 	// Set flags

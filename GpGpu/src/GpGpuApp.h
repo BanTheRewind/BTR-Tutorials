@@ -38,7 +38,7 @@
 #include "cinder/app/AppBasic.h"
 #include "cinder/gl/Fbo.h"
 #include "cinder/gl/GlslProg.h"
-#include "Resources.h"
+#include "cinder/gl/Texture.h"
 
 /* 
  * This application demonstrates how to use the FBO
