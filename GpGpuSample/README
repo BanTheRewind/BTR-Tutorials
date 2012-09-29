@@ -1,0 +1,10 @@
+Place this project in Cinder's "samples" folder.
+
+This application demonstrates how to use the FBO
+ping pong technique to update interactive data on 
+the GPU with GLSL (GPGPU). The data is then used 
+to refract a bitmap in GLSL. The motion is a version 
+of the classic "2D water" algorithm.
+
+Full tutorial here:
+http://bantherewind.com/wrap-your-mind-around-your-gpu
