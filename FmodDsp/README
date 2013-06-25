@@ -1,0 +1,7 @@
+Place this project in Cinder's "samples" folder.
+
+This application demonstrates how to set up and 
+configure FMOD DSP for both effects and instruments.
+
+Full tutorial here:
+http://bantherewind.com/wrap-your-mind-around-your-gpu
