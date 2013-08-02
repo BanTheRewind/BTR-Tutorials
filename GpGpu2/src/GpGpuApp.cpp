@@ -1,12 +1,10 @@
 #include "cinder/app/AppBasic.h"
-#include "cinder/gl/gl.h"
-#include "cinder/Surface.h"
-#include "cinder/gl/Texture.h"
-#include "cinder/gl/Vbo.h"
-#include "cinder/gl/Fbo.h"
+#include "cinder/Arcball.h"
 #include "cinder/Camera.h"
 #include "cinder/gl/GlslProg.h"
-#include "cinder/Arcball.h"
+#include "cinder/gl/Fbo.h"
+#include "cinder/gl/Texture.h"
+#include "cinder/gl/Vbo.h"
 #include "cinder/params/Params.h"
 
 #include "MeshHelper.h"
@@ -71,7 +69,7 @@ private:
 
 /////////////////////////////
 
-#include "cinder/Color.h"
+#include "cinder/ImageIo.h"
 #include "Resources.h"
 
 using namespace ci;

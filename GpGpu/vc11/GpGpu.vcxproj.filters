@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -14,18 +15,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\GpGpu2App.cpp">
+    <ClCompile Include="..\src\GpGpuApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GpGpu2App.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="..\include\Resources.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\Resources.h">
+    <None Include="..\resources\gpgpu_frag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\resources\passThru_vert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\resources\refraction_frag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\resources\texture.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

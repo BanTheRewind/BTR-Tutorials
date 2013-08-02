@@ -1,5 +1,5 @@
-uniform sampler2D	buffer;						// Data texture
 uniform vec2		pixel;						// Size of a pixel in [0,0]-[1,0]
+uniform sampler2D	texBuffer;					// Data texture
 
 varying	vec2		uv;							// Texture coordinate
 
@@ -10,7 +10,7 @@ const float			speed	= 1.0;				// Ripple travel speed
 // Samples velocity from neighbor
 float getSpring( float height, vec2 position, float factor ) 
 {
-	return ( texture2D( buffer, position ).r - height ) * factor;
+	return ( texture2D( texBuffer, position ).r - height ) * factor;
 }
 
 void main( void ) 
@@ -19,7 +19,7 @@ void main( void )
 	vec2 kernel		= pixel * speed;
 
 	// Sample the color to get the height and velocity of this pixel
-	vec4 color		= texture2D( buffer, uv );
+	vec4 color		= texture2D( texBuffer, uv );
 	float height	= color.r;
 	float vel		= color.g;
 

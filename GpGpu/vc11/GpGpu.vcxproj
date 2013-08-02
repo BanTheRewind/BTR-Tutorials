@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -10,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{297342DE-808B-4053-AC6B-2262938CDDE7}</ProjectGuid>
-    <RootNamespace>GpGpu2</RootNamespace>
+    <ProjectGuid>{74202EDD-91D2-4D2A-B0B6-355CEB16E6BE}</ProjectGuid>
+    <RootNamespace>GpGpuApp</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -19,18 +20,23 @@
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110_xp</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110_xp</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -45,68 +51,84 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\include;"..\..\..\\include";"..\..\..\\boost"</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\boost;..\src%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader />
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>"..\..\..\\include";..\include</AdditionalIncludeDirectories>
-    </ResourceCompile>
     <Link>
       <AdditionalDependencies>cinder_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>"..\..\..\\lib";"..\..\..\\lib\msw"</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\lib;..\..\..\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention />
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <IgnoreSpecificDefaultLibraries>LIBCMT;LIBCPMT</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
+    <ResourceCompile>
+      <IgnoreStandardIncludePath>
+      </IgnoreStandardIncludePath>
+      <AdditionalIncludeDirectories>..\src;..\..\..\include</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\include;"..\..\..\\include";"..\..\..\\boost"</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\boost;..\src%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PrecompiledHeader />
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>"..\..\..\\include";..\include</AdditionalIncludeDirectories>
-    </ResourceCompile>
     <Link>
       <AdditionalDependencies>cinder.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>"..\..\..\\lib";"..\..\..\\lib\msw"</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\lib;..\..\..\lib\msw;..\..\..\lib;..\..\..\lib\msw\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding />
+      <EnableCOMDATFolding>
+      </EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention />
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <ResourceCompile>
+      <IgnoreStandardIncludePath>
+      </IgnoreStandardIncludePath>
+      <AdditionalIncludeDirectories>..\src;..\..\..\include</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\GpGpuApp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\resources\gpgpu_frag.glsl" />
+    <None Include="..\resources\passThru_vert.glsl" />
+    <None Include="..\resources\refraction_frag.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\resources\texture.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Resources.h" />
+  </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\GpGpu2App.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\Resources.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
 </Project>

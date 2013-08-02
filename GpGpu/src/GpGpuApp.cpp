@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2012, Ban the Rewind
+* Copyright (c) 2013, Ban the Rewind
 * All rights reserved.
 * 
 * Redistribution and use in source and binary forms, with or 
@@ -69,8 +69,8 @@ void GpGpuApp::draw()
 
 	// Bind and configure the GPGPU shader
 	mShaderGpGpu.bind();
-	mShaderGpGpu.uniform( "buffer", 0 ); 
 	mShaderGpGpu.uniform( "pixel", kPixel );
+	mShaderGpGpu.uniform( "texBuffer", 0 ); 
 
 	// Draw a fullscreen rectangle to process data
 	drawFullScreenRect();
@@ -117,9 +117,9 @@ void GpGpuApp::draw()
 		
 		// Bind and configure the refraction shader
 		mShaderRefraction.bind();
-		mShaderRefraction.uniform( "buffer", 0 );
 		mShaderRefraction.uniform( "pixel", kPixel );
-		mShaderRefraction.uniform( "tex", 1 );
+		mShaderRefraction.uniform( "texBuffer", 0 );
+		mShaderRefraction.uniform( "texRefract", 1 );
 
 		// Fill the screen with the shader output
 		drawFullScreenRect();

@@ -22,9 +22,7 @@ private:
 	FMOD::Sound*				mSound;
 	FMOD::System*				mSystem;
 	
-	float						mSoundLevel;
-	float						mSoundSpeed;
-	
+	void						createDsp( FMOD_DSP_TYPE type, FMOD::DSP* dsp );
 	FMOD::DSP*					mDspChorus;
 	FMOD::DSP*					mDspCompressor;
 	FMOD::DSP*					mDspDistortion;
@@ -39,6 +37,9 @@ private:
 	FMOD::DSP*					mDspReverb;
 	FMOD::DSP*					mDspTremolo;
 	
+	float						mSoundLevel;
+	float						mSoundSpeed;
+
 	float						mChorusDepth;
 	float						mChorusDryMix;
 	float						mChorusDelay;
@@ -150,6 +151,14 @@ using namespace std;
 static const size_t kBufferLength	= 512;
 static const float	kBufferLengthf	= (float)kBufferLength;
 
+void FmodDspApp::createDsp( FMOD_DSP_TYPE type, FMOD::DSP* dsp )
+{
+	if ( mSystem->createDSPByType( type, &dsp ) != FMOD_OK ) {
+		console() << "Unable to create DSP " << type << endl;
+		quit();
+	}
+}
+
 void FmodDspApp::draw()
 {
 	gl::clear();
@@ -184,6 +193,25 @@ void FmodDspApp::setup()
 	///////////////////////////////////////////////////////////////////////////
 	// Define all properties
 	
+	mChannelSound			= 0;
+	mChannelSynth			= 0;
+	mSound					= 0;
+	mSystem					= 0;
+	
+	mDspChorus				= 0;
+	mDspCompressor			= 0;
+	mDspDistortion			= 0;
+	mDspEcho				= 0;
+	mDspFlange				= 0;
+	mDspHighPass			= 0;
+	mDspLowPass				= 0;
+	mDspNormalize			= 0;
+	mDspOscillator			= 0;
+	mDspParamEq				= 0;
+	mDspPitchShift			= 0;
+	mDspReverb				= 0;
+	mDspTremolo				= 0;
+
 	mFrameRate				= 0.0f;
 	mFullScreen				= isFullScreen();
 	mFullScreenPrev			= mFullScreen;
@@ -293,38 +321,56 @@ void FmodDspApp::setup()
 	mTremoloSkew			= 0.0f;
 	mTremoloSpread			= 0.0f;
 	mTremoloSquare			= 0.0f;
-	
+
 	///////////////////////////////////////////////////////////////////////////
 	// FMOD
 	
 	// Basic FMOD system initialization
 	FMOD::System_Create( &mSystem );
-	mSystem->init( 32, FMOD_INIT_NORMAL, 0 );
+	if ( mSystem == 0 ) {
+		console() << "Unable to create system" << endl;
+		quit();
+		return;
+	}
+	if ( mSystem->init( 2, FMOD_INIT_NORMAL, 0 ) != FMOD_OK ) {
+		console() << "Unable to initialize system" << endl;
+		quit();
+		return;
+	}
 	
-	// Initialize our DSPs
-	mSystem->createDSPByType( FMOD_DSP_TYPE_CHORUS,		&mDspChorus );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_COMPRESSOR,	&mDspCompressor );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_DISTORTION,	&mDspDistortion );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_ECHO,		&mDspEcho );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_FLANGE,		&mDspFlange );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_HIGHPASS,	&mDspHighPass );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_LOWPASS,	&mDspLowPass );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_NORMALIZE,	&mDspNormalize );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_OSCILLATOR, &mDspOscillator );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_PARAMEQ,	&mDspParamEq );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_PITCHSHIFT,	&mDspPitchShift );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_SFXREVERB,	&mDspReverb );
-	mSystem->createDSPByType( FMOD_DSP_TYPE_TREMOLO,	&mDspTremolo );
+	// Initialize DSPs
+	createDsp( FMOD_DSP_TYPE_CHORUS,		mDspChorus );
+	createDsp( FMOD_DSP_TYPE_COMPRESSOR,	mDspCompressor );
+	createDsp( FMOD_DSP_TYPE_DISTORTION,	mDspDistortion );
+	createDsp( FMOD_DSP_TYPE_ECHO,			mDspEcho );
+	createDsp( FMOD_DSP_TYPE_FLANGE,		mDspFlange );
+	createDsp( FMOD_DSP_TYPE_HIGHPASS,		mDspHighPass );
+	createDsp( FMOD_DSP_TYPE_LOWPASS,		mDspLowPass );
+	createDsp( FMOD_DSP_TYPE_NORMALIZE,		mDspNormalize );
+	createDsp( FMOD_DSP_TYPE_OSCILLATOR,	mDspOscillator );
+	createDsp( FMOD_DSP_TYPE_PARAMEQ,		mDspParamEq );
+	createDsp( FMOD_DSP_TYPE_PITCHSHIFT,	mDspPitchShift );
+	createDsp( FMOD_DSP_TYPE_SFXREVERB,		mDspReverb );
+	createDsp( FMOD_DSP_TYPE_TREMOLO,		mDspTremolo );
 	
 	// Load and play the loop
-	mSystem->createSound( getAssetPath( "Blank__Kytt_-_08_-_RSPN.mp3" ).string().c_str(), FMOD_SOFTWARE, 0, &mSound );
+	if ( mSystem->createSound( getAssetPath( "Blank__Kytt_-_08_-_RSPN.mp3" ).string().c_str(), FMOD_SOFTWARE, 0, &mSound ) != FMOD_OK ) {
+		console() << "Unable to load sound" << endl;
+		quit();
+	}
 	mSound->setMode( FMOD_LOOP_NORMAL );
-	mSystem->playSound( FMOD_CHANNEL_FREE, mSound, false, &mChannelSound );
+	if ( mSystem->playSound( FMOD_CHANNEL_FREE, mSound, false, &mChannelSound ) != FMOD_OK ) {
+		console() << "Unable to play sound" << endl;
+		quit();
+	}
 	
 	// The oscillator generates sound, so we are going
 	// to play it in its own channel rather than add
 	// it as an effect
-	mSystem->playDSP( FMOD_CHANNEL_FREE, mDspOscillator, true, &mChannelSynth );
+	FMOD_RESULT result = mSystem->playDSP( FMOD_CHANNEL_FREE, mDspOscillator, false, &mChannelSynth );
+	if ( result != FMOD_OK ) {
+		console() << "Unable to play synth ERR " << result << endl;
+	}
 	
 	// Lower the FFT size for better clarity when locking pitch
 	mDspPitchShift->setParameter( FMOD_DSP_PITCHSHIFT_FFTSIZE, 512 );
@@ -447,7 +493,7 @@ void FmodDspApp::update()
 		setFullScreen( mFullScreen );
 		mFullScreenPrev	= mFullScreen;
 	}
-	
+
 	// Sample playback
 	mChannelSound->setFrequency( 44100.0f * mSoundSpeed );
 	mChannelSound->setVolume( mSoundLevel );
@@ -472,19 +518,21 @@ void FmodDspApp::update()
 	}
 	
 	// Compressor
-	if ( mCompressorEnabledPrev != mCompressorEnabled ) {
-		if ( mCompressorEnabled ) {
-			mSystem->addDSP( mDspCompressor, 0 );
-		} else {
-			mDspCompressor->remove();
+	if ( mDspCompressor != 0 ) {
+		if ( mCompressorEnabledPrev != mCompressorEnabled ) {
+			if ( mCompressorEnabled ) {
+				mSystem->addDSP( mDspCompressor, 0 );
+			} else {
+				mDspCompressor->remove();
+			}
+			mCompressorEnabledPrev = mCompressorEnabled;
 		}
-		mCompressorEnabledPrev = mCompressorEnabled;
-	}
-	if ( mCompressorEnabled ) {
-		mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_ATTACK,		mCompressorAttack );
-		mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_GAINMAKEUP,	mCompressorGainMakeup );
-		mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_RELEASE,		mCompressorRelease );
-		mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_THRESHOLD,	mCompressorThreshold );
+		if ( mCompressorEnabled ) {
+			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_ATTACK,		mCompressorAttack );
+			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_GAINMAKEUP,	mCompressorGainMakeup );
+			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_RELEASE,		mCompressorRelease );
+			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_THRESHOLD,	mCompressorThreshold );
+		}
 	}
 	
 	// Distortion
