@@ -56,16 +56,17 @@ void GpGpuApp::draw()
 
 	// Bind the other FBO to draw onto it
 	size_t pong = ( mFboIndex + 1 ) % 2;
-	mFbo[ pong ].bindFramebuffer();
+	mFbo.bindFramebuffer();
+	glDrawBuffer( GL_COLOR_ATTACHMENT0 + pong );
 
 	// Set up the window to match the FBO
-	gl::setViewport( mFbo[ mFboIndex ].getBounds() );
-	gl::setMatricesWindow( mFbo[ mFboIndex ].getSize(), false );
+	gl::setViewport( mFbo.getBounds() );
+	gl::setMatricesWindow( mFbo.getSize(), false );
 	gl::clear();
 
 	// Bind the texture from the FBO on which we last 
 	// wrote data
-	mFbo[ mFboIndex ].bindTexture();
+	mFbo.bindTexture( 0, mFboIndex );
 
 	// Bind and configure the GPGPU shader
 	mShaderGpGpu.bind();
@@ -79,7 +80,7 @@ void GpGpuApp::draw()
 	mShaderGpGpu.unbind();
 
 	// Unbind and disable textures
-	mFbo[ mFboIndex ].unbindTexture();
+	mFbo.unbindTexture();
 	gl::disable( GL_TEXTURE_2D );
 
 	// Draw mouse input into red channel
@@ -90,7 +91,7 @@ void GpGpuApp::draw()
 	}
 
 	// Stop drawing to FBO
-	mFbo[ pong ].unbindFramebuffer();
+	mFbo.unbindFramebuffer();
 
 	// Swap FBOs
 	mFboIndex = pong;
@@ -105,11 +106,11 @@ void GpGpuApp::draw()
 	
 	// This flag draws the raw data without refraction
 	if ( mShowInput ) {
-		gl::draw( mFbo[ mFboIndex ].getTexture() );
+		gl::draw( mFbo.getTexture( mFboIndex ) );
 	} else {
 
 		// Bind the FBO we last rendered as a texture
-		mFbo[ mFboIndex ].bindTexture( 0, 0 );
+		mFbo.bindTexture( 0, mFboIndex );
 
 		// Bind and enable the refraction texture
 		gl::enable( GL_TEXTURE_2D );
@@ -238,19 +239,22 @@ void GpGpuApp::setup()
 	{
 		// Set up format with 32-bit color for high resolution data
 		gl::Fbo::Format format;
-		format.enableColorBuffer( true );
-		format.enableDepthBuffer( false );
+		format.enableColorBuffer( true, 2 );
+		format.setMagFilter( GL_NEAREST );
+		format.setMinFilter( GL_NEAREST );
 		format.setColorInternalFormat( GL_RGBA32F_ARB );
 
-		// Create two frame buffer objects to ping pong
-		mFboIndex = 0;
+		// Create a frame buffer object with two attachments ping pong
+		mFboIndex	= 0;
+		mFbo		= gl::Fbo( kWindowSize.x, kWindowSize.y, format );
+		mFbo.bindFramebuffer();
+		const GLenum buffers[ 2 ] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		glDrawBuffers( 2, buffers );
+		gl::setViewport( mFbo.getBounds() );
+		gl::clear();
+		mFbo.unbindFramebuffer();
 		for ( size_t i = 0; i < 2; ++i ) {
-			mFbo[ i ] = gl::Fbo( kWindowSize.x, kWindowSize.y, format );
-			mFbo[ i ].bindFramebuffer();
-			gl::setViewport( mFbo[ i ].getBounds() );
-			gl::clear();
-			mFbo[ i ].unbindFramebuffer();
-			mFbo[ i ].getTexture().setWrap( GL_REPEAT, GL_REPEAT );
+			mFbo.getTexture( i ).setWrap( GL_REPEAT, GL_REPEAT );
 		}
 	}
 }

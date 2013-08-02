@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2012, Ban the Rewind
+* Copyright (c) 2013, Ban the Rewind
 * All rights reserved.
 * 
 * Redistribution and use in source and binary forms, with or 
@@ -64,7 +64,7 @@ private:
 	void				drawFullScreenRect();
 
 	// Frame buffer objects to ping pong
-	ci::gl::Fbo			mFbo[ 2 ];
+	ci::gl::Fbo			mFbo;
 	size_t				mFboIndex;
 
 	// Shaders

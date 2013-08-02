@@ -123,6 +123,7 @@
     <Image Include="..\resources\texture.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\GpGpuApp.h" />
     <ClInclude Include="..\src\Resources.h" />
   </ItemGroup>
   <ItemGroup>
