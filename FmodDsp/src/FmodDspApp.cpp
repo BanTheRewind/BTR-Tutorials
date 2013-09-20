@@ -1,12 +1,10 @@
 #include "cinder/app/AppNative.h"
-#include "cinder/gl/gl.h"
 #include "cinder/params/Params.h"
-
 #include "FMOD.hpp"
 
 /*
  * This application demonstrates how to set up and 
- * configure FMOD DSP for both effects and instruments. *
+ * configure FMOD DSP for both effects and instruments.
  */
 
 class FmodDspApp : public ci::app::AppNative
@@ -22,7 +20,7 @@ private:
 	FMOD::Sound*				mSound;
 	FMOD::System*				mSystem;
 	
-	void						createDsp( FMOD_DSP_TYPE type, FMOD::DSP* dsp );
+	bool						fmodCheck( FMOD_RESULT result, const std::string& label = "", bool releaseOnError = false );
 	FMOD::DSP*					mDspChorus;
 	FMOD::DSP*					mDspCompressor;
 	FMOD::DSP*					mDspDistortion;
@@ -144,20 +142,15 @@ private:
 	ci::params::InterfaceGlRef	mParams;
 };
 
+#include "cinder/gl/gl.h"
+#include "fmod_errors.h"
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
 
 static const size_t kBufferLength	= 512;
 static const float	kBufferLengthf	= (float)kBufferLength;
-
-void FmodDspApp::createDsp( FMOD_DSP_TYPE type, FMOD::DSP* dsp )
-{
-	if ( mSystem->createDSPByType( type, &dsp ) != FMOD_OK ) {
-		console() << "Unable to create DSP " << type << endl;
-		quit();
-	}
-}
 
 void FmodDspApp::draw()
 {
@@ -180,6 +173,22 @@ void FmodDspApp::draw()
 	glDrawArrays( GL_LINE_STRIP, 0, vertices.size() );
 	
 	mParams->draw();
+}
+
+bool FmodDspApp::fmodCheck( FMOD_RESULT result, const std::string& label, bool releaseOnError )
+{
+	if ( result == FMOD_OK ) {
+		return true;
+	}
+	
+	if ( !label.empty() ) {
+		console() << label << ": ";
+	}
+	console() << FMOD_ErrorString( result ) << endl;
+	if ( releaseOnError && mSystem != 0 ) {
+		mSystem->release();
+	}
+	return false;
 }
 
 void FmodDspApp::prepareSettings( Settings* settings )
@@ -268,7 +277,7 @@ void FmodDspApp::setup()
 	mNormalizeThreshold		= 0.1f;
 	
 	mOscillatorEnabled		= false;
-	mOscillatorEnabledPrev	= mOscillatorEnabled;
+	mOscillatorEnabledPrev	= !mOscillatorEnabled;
 	mOscillatorLevel		= 1.0f;
 	mOscillatorRate			= 220.0f;
 	mOscillatorType			= 0;
@@ -326,54 +335,48 @@ void FmodDspApp::setup()
 	// FMOD
 	
 	// Basic FMOD system initialization
-	FMOD::System_Create( &mSystem );
-	if ( mSystem == 0 ) {
-		console() << "Unable to create system" << endl;
+	if ( !fmodCheck( FMOD::System_Create( &mSystem ), "Create system" ) || mSystem == 0 ) {
 		quit();
 		return;
 	}
-	if ( mSystem->init( 2, FMOD_INIT_NORMAL, 0 ) != FMOD_OK ) {
-		console() << "Unable to initialize system" << endl;
+	if ( !fmodCheck( mSystem->init( 2, FMOD_INIT_NORMAL, 0 ), "Initialize system" ) ) {
 		quit();
 		return;
 	}
-	
-	// Initialize DSPs
-	createDsp( FMOD_DSP_TYPE_CHORUS,		mDspChorus );
-	createDsp( FMOD_DSP_TYPE_COMPRESSOR,	mDspCompressor );
-	createDsp( FMOD_DSP_TYPE_DISTORTION,	mDspDistortion );
-	createDsp( FMOD_DSP_TYPE_ECHO,			mDspEcho );
-	createDsp( FMOD_DSP_TYPE_FLANGE,		mDspFlange );
-	createDsp( FMOD_DSP_TYPE_HIGHPASS,		mDspHighPass );
-	createDsp( FMOD_DSP_TYPE_LOWPASS,		mDspLowPass );
-	createDsp( FMOD_DSP_TYPE_NORMALIZE,		mDspNormalize );
-	createDsp( FMOD_DSP_TYPE_OSCILLATOR,	mDspOscillator );
-	createDsp( FMOD_DSP_TYPE_PARAMEQ,		mDspParamEq );
-	createDsp( FMOD_DSP_TYPE_PITCHSHIFT,	mDspPitchShift );
-	createDsp( FMOD_DSP_TYPE_SFXREVERB,		mDspReverb );
-	createDsp( FMOD_DSP_TYPE_TREMOLO,		mDspTremolo );
-	
+
 	// Load and play the loop
-	if ( mSystem->createSound( getAssetPath( "Blank__Kytt_-_08_-_RSPN.mp3" ).string().c_str(), FMOD_SOFTWARE, 0, &mSound ) != FMOD_OK ) {
+	if ( !fmodCheck( mSystem->createSound( getAssetPath( "Blank__Kytt_-_08_-_RSPN.mp3" ).string().c_str(), FMOD_SOFTWARE, 0, &mSound ), "Create sound" ) ) {
 		console() << "Unable to load sound" << endl;
 		quit();
 	}
-	mSound->setMode( FMOD_LOOP_NORMAL );
-	if ( mSystem->playSound( FMOD_CHANNEL_FREE, mSound, false, &mChannelSound ) != FMOD_OK ) {
+	fmodCheck( mSound->setMode( FMOD_LOOP_NORMAL ), "Set loop" );
+	if ( !fmodCheck( mSystem->playSound( FMOD_CHANNEL_FREE, mSound, false, &mChannelSound ), "Play sound" ) ) {
 		console() << "Unable to play sound" << endl;
 		quit();
 	}
 	
+	// Initialize DSPs
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_CHORUS,		&mDspChorus ),		"Create chorus DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_COMPRESSOR,	&mDspCompressor ),	"Create compressor DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_DISTORTION,	&mDspDistortion ),	"Create distortion DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_ECHO,		&mDspEcho ),		"Create echo DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_FLANGE,		&mDspFlange ),		"Create flange DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_HIGHPASS,	&mDspHighPass ),	"Create HP filter DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_LOWPASS,		&mDspLowPass ),		"Create LP filter DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_NORMALIZE,	&mDspNormalize ),	"Create normalize DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_OSCILLATOR,	&mDspOscillator ),	"Create oscillator DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_PARAMEQ,		&mDspParamEq ),		"Create EQ DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_PITCHSHIFT,	&mDspPitchShift ),	"Create pitch shift DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_SFXREVERB,	&mDspReverb ),		"Create reverb DSP" );
+	fmodCheck( mSystem->createDSPByType( FMOD_DSP_TYPE_TREMOLO,		&mDspTremolo ),		"Create tremolo DSP" );
+	
 	// The oscillator generates sound, so we are going
 	// to play it in its own channel rather than add
 	// it as an effect
-	FMOD_RESULT result = mSystem->playDSP( FMOD_CHANNEL_FREE, mDspOscillator, false, &mChannelSynth );
-	if ( result != FMOD_OK ) {
-		console() << "Unable to play synth ERR " << result << endl;
-	}
+	fmodCheck( mSystem->playDSP( FMOD_CHANNEL_FREE, mDspOscillator, false, &mChannelSynth ), "Play oscillator" );
 	
 	// Lower the FFT size for better clarity when locking pitch
-	mDspPitchShift->setParameter( FMOD_DSP_PITCHSHIFT_FFTSIZE, 512 );
+	fmodCheck( mDspPitchShift->setParameter( FMOD_DSP_PITCHSHIFT_FFTSIZE, 512 ) );
 	
 	///////////////////////////////////////////////////////////////////////////
 	// Params
@@ -501,155 +504,155 @@ void FmodDspApp::update()
 	// Chorus
 	if ( mChorusEnabledPrev != mChorusEnabled ) {
 		if ( mChorusEnabled ) {
-			mSystem->addDSP( mDspChorus, 0 );
+			fmodCheck( mSystem->addDSP( mDspChorus, 0 ), "Add chorus DSP" );
 		} else {
-			mDspChorus->remove();
+			fmodCheck( mDspChorus->remove(), "Remove chorus DSP" );
 		}
 		mChorusEnabledPrev = mChorusEnabled;
 	}
 	if ( mChorusEnabled ) {
-		mDspChorus->setParameter( FMOD_DSP_CHORUS_DELAY,	mChorusDelay );
-		mDspChorus->setParameter( FMOD_DSP_CHORUS_DEPTH,	mChorusDepth );
-		mDspChorus->setParameter( FMOD_DSP_CHORUS_DRYMIX,	mChorusDryMix );
-		mDspChorus->setParameter( FMOD_DSP_CHORUS_RATE,		mChorusRate );
-		mDspChorus->setParameter( FMOD_DSP_CHORUS_WETMIX1,	mChorusWetMix1 );
-		mDspChorus->setParameter( FMOD_DSP_CHORUS_WETMIX2,	mChorusWetMix2 );
-		mDspChorus->setParameter( FMOD_DSP_CHORUS_WETMIX3,	mChorusWetMix3 );
+		fmodCheck( mDspChorus->setParameter( FMOD_DSP_CHORUS_DELAY,		mChorusDelay ) );
+		fmodCheck( mDspChorus->setParameter( FMOD_DSP_CHORUS_DEPTH,		mChorusDepth ) );
+		fmodCheck( mDspChorus->setParameter( FMOD_DSP_CHORUS_DRYMIX,	mChorusDryMix ) );
+		fmodCheck( mDspChorus->setParameter( FMOD_DSP_CHORUS_RATE,		mChorusRate ) );
+		fmodCheck( mDspChorus->setParameter( FMOD_DSP_CHORUS_WETMIX1,	mChorusWetMix1 ) );
+		fmodCheck( mDspChorus->setParameter( FMOD_DSP_CHORUS_WETMIX2,	mChorusWetMix2 ) );
+		fmodCheck( mDspChorus->setParameter( FMOD_DSP_CHORUS_WETMIX3,	mChorusWetMix3 ) );
 	}
 	
 	// Compressor
 	if ( mDspCompressor != 0 ) {
 		if ( mCompressorEnabledPrev != mCompressorEnabled ) {
 			if ( mCompressorEnabled ) {
-				mSystem->addDSP( mDspCompressor, 0 );
+				fmodCheck( mSystem->addDSP( mDspCompressor, 0 ), "Add compressor DSP" );
 			} else {
-				mDspCompressor->remove();
+				fmodCheck( mDspCompressor->remove(), "Remove compressor DSP" );
 			}
 			mCompressorEnabledPrev = mCompressorEnabled;
 		}
 		if ( mCompressorEnabled ) {
-			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_ATTACK,		mCompressorAttack );
-			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_GAINMAKEUP,	mCompressorGainMakeup );
-			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_RELEASE,		mCompressorRelease );
-			mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_THRESHOLD,	mCompressorThreshold );
+			fmodCheck( mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_ATTACK,		(float)mCompressorAttack ) );
+			fmodCheck( mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_GAINMAKEUP,	(float)mCompressorGainMakeup ) );
+			fmodCheck( mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_RELEASE,		(float)mCompressorRelease ) );
+			fmodCheck( mDspCompressor->setParameter( FMOD_DSP_COMPRESSOR_THRESHOLD,		(float)mCompressorThreshold ) );
 		}
 	}
 	
 	// Distortion
 	if ( mDistortionEnabledPrev != mDistortionEnabled ) {
 		if ( mDistortionEnabled ) {
-			mSystem->addDSP( mDspDistortion, 0 );
+			fmodCheck( mSystem->addDSP( mDspDistortion, 0 ), "Add distortion DSP" );
 		} else {
-			mDspDistortion->remove();
+			fmodCheck( mDspDistortion->remove(), "Remove distortion DSP" );
 		}
 		mDistortionEnabledPrev = mDistortionEnabled;
 	}
 	if ( mDistortionEnabled ) {
-		mDspDistortion->setParameter( FMOD_DSP_DISTORTION_LEVEL, mDistortionLevel );
+		fmodCheck( mDspDistortion->setParameter( FMOD_DSP_DISTORTION_LEVEL, mDistortionLevel ) );
 	}
 	
 	// Echo
 	if ( mEchoEnabledPrev != mEchoEnabled ) {
 		if ( mEchoEnabled ) {
-			mSystem->addDSP( mDspEcho, 0 );
+			fmodCheck( mSystem->addDSP( mDspEcho, 0 ), "Add echo DSP" );
 		} else {
-			mDspEcho->remove();
+			fmodCheck( mDspEcho->remove(), "Remove echo DSP" );
 		}
 		mEchoEnabledPrev = mEchoEnabled;
 	}
 	if ( mEchoEnabled ) {
-		mDspEcho->setParameter( FMOD_DSP_ECHO_DECAYRATIO,	mEchoDecayRatio );
-		mDspEcho->setParameter( FMOD_DSP_ECHO_DELAY,		mEchoDelay );
-		mDspEcho->setParameter( FMOD_DSP_ECHO_DRYMIX,		mEchoDryMix );
-		mDspEcho->setParameter( FMOD_DSP_ECHO_WETMIX,		mEchoWetMix );
+		fmodCheck( mDspEcho->setParameter( FMOD_DSP_ECHO_DECAYRATIO,	mEchoDecayRatio ) );
+		fmodCheck( mDspEcho->setParameter( FMOD_DSP_ECHO_DELAY,			mEchoDelay ) );
+		fmodCheck( mDspEcho->setParameter( FMOD_DSP_ECHO_DRYMIX,		mEchoDryMix ) );
+		fmodCheck( mDspEcho->setParameter( FMOD_DSP_ECHO_WETMIX,		mEchoWetMix ) );
 	}
 	
 	// Flange
 	if ( mFlangeEnabledPrev != mFlangeEnabled ) {
 		if ( mFlangeEnabled ) {
-			mSystem->addDSP( mDspFlange, 0 );
+			fmodCheck( mSystem->addDSP( mDspFlange, 0 ), "Add flange DSP" );
 		} else {
-			mDspFlange->remove();
+			fmodCheck( mDspFlange->remove(), "Remove flange DSP" );
 		}
 		mFlangeEnabledPrev = mFlangeEnabled;
 	}
 	if ( mFlangeEnabled ) {
-		mDspFlange->setParameter( FMOD_DSP_FLANGE_DEPTH,	mFlangeDepth );
-		mDspFlange->setParameter( FMOD_DSP_FLANGE_DRYMIX,	mFlangeDryMix );
-		mDspFlange->setParameter( FMOD_DSP_FLANGE_RATE,		mFlangeRate );
-		mDspFlange->setParameter( FMOD_DSP_FLANGE_WETMIX,	mFlangeWetMix );
+		fmodCheck( mDspFlange->setParameter( FMOD_DSP_FLANGE_DEPTH,		mFlangeDepth ) );
+		fmodCheck( mDspFlange->setParameter( FMOD_DSP_FLANGE_DRYMIX,	mFlangeDryMix ) );
+		fmodCheck( mDspFlange->setParameter( FMOD_DSP_FLANGE_RATE,		mFlangeRate ) );
+		fmodCheck( mDspFlange->setParameter( FMOD_DSP_FLANGE_WETMIX,	mFlangeWetMix ) );
 	}
 	
 	// High pass filter
 	if ( mHighPassEnabledPrev != mHighPassEnabled ) {
 		if ( mHighPassEnabled ) {
-			mSystem->addDSP( mDspHighPass, 0 );
+			fmodCheck( mSystem->addDSP( mDspHighPass, 0 ), "Add HP filter DSP" );
 		} else {
-			mDspHighPass->remove();
+			fmodCheck( mDspHighPass->remove(), "Remove HP filter DSP" );
 		}
 		mHighPassEnabledPrev = mHighPassEnabled;
 	}
 	if ( mHighPassEnabled ) {
-		mDspHighPass->setParameter( FMOD_DSP_HIGHPASS_CUTOFF,		mHighPassCutoff );
-		mDspHighPass->setParameter( FMOD_DSP_HIGHPASS_RESONANCE,	mHighPassResonance );
+		fmodCheck( mDspHighPass->setParameter( FMOD_DSP_HIGHPASS_CUTOFF,	mHighPassCutoff ) );
+		fmodCheck( mDspHighPass->setParameter( FMOD_DSP_HIGHPASS_RESONANCE,	mHighPassResonance ) );
 	}
 	
 	// Low pass filter
 	if ( mLowPassEnabledPrev != mLowPassEnabled ) {
 		if ( mLowPassEnabled ) {
-			mSystem->addDSP( mDspLowPass, 0 );
+			fmodCheck( mSystem->addDSP( mDspLowPass, 0 ), "Add LP filter DSP" );
 		} else {
-			mDspLowPass->remove();
+			fmodCheck( mDspLowPass->remove(), "Remove LP filter DSP" );
 		}
 		mLowPassEnabledPrev = mLowPassEnabled;
 	}
 	if ( mLowPassEnabled ) {
-		mDspLowPass->setParameter( FMOD_DSP_LOWPASS_CUTOFF,		mLowPassCutoff );
-		mDspLowPass->setParameter( FMOD_DSP_LOWPASS_RESONANCE,	mLowPassResonance );
+		fmodCheck( mDspLowPass->setParameter( FMOD_DSP_LOWPASS_CUTOFF,		mLowPassCutoff ) );
+		fmodCheck( mDspLowPass->setParameter( FMOD_DSP_LOWPASS_RESONANCE,	mLowPassResonance ) );
 	}
 	
 	// Normalizer
 	if ( mNormalizeEnabledPrev != mNormalizeEnabled ) {
 		if ( mNormalizeEnabled ) {
-			mSystem->addDSP( mDspNormalize, 0 );
+			fmodCheck( mSystem->addDSP( mDspNormalize, 0 ), "Add normalize DSP" );
 		} else {
-			mDspNormalize->remove();
+			fmodCheck( mDspNormalize->remove(), "Remove normalize DSP" );
 		}
 		mNormalizeEnabledPrev = mNormalizeEnabled;
 	}
 	if ( mNormalizeEnabled ) {
-		mDspNormalize->setParameter( FMOD_DSP_NORMALIZE_FADETIME,	mNormalizeFadeTime );
-		mDspNormalize->setParameter( FMOD_DSP_NORMALIZE_MAXAMP,		mNormalizeMaxAmp );
-		mDspNormalize->setParameter( FMOD_DSP_NORMALIZE_THRESHHOLD,	mNormalizeThreshold );
+		fmodCheck( mDspNormalize->setParameter( FMOD_DSP_NORMALIZE_FADETIME,	mNormalizeFadeTime ) );
+		fmodCheck( mDspNormalize->setParameter( FMOD_DSP_NORMALIZE_MAXAMP,		mNormalizeMaxAmp ) );
+		fmodCheck( mDspNormalize->setParameter( FMOD_DSP_NORMALIZE_THRESHHOLD,	mNormalizeThreshold ) );
 	}
 	
 	// Oscillator (synth)
 	if ( mOscillatorEnabledPrev != mOscillatorEnabled ) {
-		mChannelSynth->setPaused( !mOscillatorEnabled );
+		fmodCheck( mChannelSynth->setPaused( !mOscillatorEnabled ), "Pause oscillator" );
 		mOscillatorEnabledPrev = mOscillatorEnabled;
 	}
 	if ( mOscillatorTypePrev != mOscillatorType ) {
-		mDspOscillator->setParameter( FMOD_DSP_OSCILLATOR_TYPE,	mOscillatorType );
+		fmodCheck( mDspOscillator->setParameter( FMOD_DSP_OSCILLATOR_TYPE,	mOscillatorType ) );
 		mOscillatorTypePrev = mOscillatorType;
 	}
 	if ( mOscillatorEnabled ) {
-		mChannelSynth->setVolume( mOscillatorLevel );
-		mDspOscillator->setParameter( FMOD_DSP_OSCILLATOR_RATE,	mOscillatorRate );
+		fmodCheck( mChannelSynth->setVolume( mOscillatorLevel ) );
+		fmodCheck( mDspOscillator->setParameter( FMOD_DSP_OSCILLATOR_RATE,	mOscillatorRate ) );
 	}
 	
 	// Parametric EQ
 	if ( mParamEqEnabledPrev != mParamEqEnabled ) {
 		if ( mParamEqEnabled ) {
-			mSystem->addDSP( mDspParamEq, 0 );
+			fmodCheck( mSystem->addDSP( mDspParamEq, 0 ), "Add EQ DSP" );
 		} else {
-			mDspParamEq->remove();
+			fmodCheck( mDspParamEq->remove(), "Remove EQ DSP" );
 		}
 		mParamEqEnabledPrev = mParamEqEnabled;
 	}
 	if ( mParamEqEnabled ) {
-		mDspParamEq->setParameter( FMOD_DSP_PARAMEQ_BANDWIDTH,	mParamEqBandwidth );
-		mDspParamEq->setParameter( FMOD_DSP_PARAMEQ_CENTER,		mParamEqCenter );
-		mDspParamEq->setParameter( FMOD_DSP_PARAMEQ_GAIN,		mParamEqGain );
+		fmodCheck( mDspParamEq->setParameter( FMOD_DSP_PARAMEQ_BANDWIDTH,	mParamEqBandwidth ) );
+		fmodCheck( mDspParamEq->setParameter( FMOD_DSP_PARAMEQ_CENTER,		mParamEqCenter ) );
+		fmodCheck( mDspParamEq->setParameter( FMOD_DSP_PARAMEQ_GAIN,		mParamEqGain ) );
 	}
 	
 	// Pitch shift
@@ -658,60 +661,60 @@ void FmodDspApp::update()
 	}
 	if ( mPitchShiftEnabledPrev != mPitchShiftEnabled ) {
 		if ( mPitchShiftEnabled ) {
-			mSystem->addDSP( mDspPitchShift, 0 );
+			fmodCheck( mSystem->addDSP( mDspPitchShift, 0 ), "Add pitch shift DSP" );
 		} else {
-			mDspPitchShift->remove();
+			fmodCheck( mDspPitchShift->remove(), "Remove pitch shift DSP" );
 		}
 		mPitchShiftEnabledPrev = mPitchShiftEnabled;
 	}
 	if ( mPitchShiftEnabled ) {
-		mDspPitchShift->setParameter( FMOD_DSP_PITCHSHIFT_PITCH, mPitchShiftPitch );
+		fmodCheck( mDspPitchShift->setParameter( FMOD_DSP_PITCHSHIFT_PITCH, mPitchShiftPitch ) );
 	}
 	
 	// Reverb
 	if ( mReverbEnabledPrev != mReverbEnabled ) {
 		if ( mReverbEnabled ) {
-			mSystem->addDSP( mDspReverb, 0 );
+			fmodCheck( mSystem->addDSP( mDspReverb, 0 ), "Add reverb DSP" );
 		} else {
-			mDspReverb->remove();
+			fmodCheck( mDspReverb->remove(), "Remove reverb DSP" );
 		}
 		mReverbEnabledPrev = mReverbEnabled;
 	}
 	if ( mReverbEnabled ) {
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DECAYHFRATIO,		mReverbDecayHfRatio );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DECAYTIME,			mReverbDecayTime );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DENSITY,			mReverbDensity );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DIFFUSION,			mReverbDiffusion );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DRYLEVEL,			mReverbDryLevel );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_HFREFERENCE,		mReverbHfReference );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_LFREFERENCE,		mReverbLfReference );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REFLECTIONSDELAY,	mReverbReflectionsDelay );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REFLECTIONSLEVEL,	mReverbReflectionsLevel );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REVERBDELAY,		mReverbReverbDelay );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REVERBLEVEL,		mReverbReverbLevel );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_ROOM,				mReverbRoom );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_ROOMHF,			mReverbRoomHf );
-		mDspReverb->setParameter( FMOD_DSP_SFXREVERB_ROOMLF,			mReverbRoomLf );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DECAYHFRATIO,		mReverbDecayHfRatio ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DECAYTIME,			mReverbDecayTime ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DENSITY,			mReverbDensity ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DIFFUSION,			mReverbDiffusion ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_DRYLEVEL,			mReverbDryLevel ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_HFREFERENCE,		mReverbHfReference ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_LFREFERENCE,		mReverbLfReference ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REFLECTIONSDELAY,	mReverbReflectionsDelay ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REFLECTIONSLEVEL,	mReverbReflectionsLevel ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REVERBDELAY,		mReverbReverbDelay ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_REVERBLEVEL,		mReverbReverbLevel ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_ROOM,				mReverbRoom ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_ROOMHF,				mReverbRoomHf ) );
+		fmodCheck( mDspReverb->setParameter( FMOD_DSP_SFXREVERB_ROOMLF,				mReverbRoomLf ) );
 	}
 	
 	// Tremolo
 	if ( mTremoloEnabledPrev != mTremoloEnabled ) {
 		if ( mTremoloEnabled ) {
-			mSystem->addDSP( mDspTremolo, 0 );
+			fmodCheck( mSystem->addDSP( mDspTremolo, 0 ), "Add tremolo DSP" );
 		} else {
-			mDspTremolo->remove();
+			fmodCheck( mDspTremolo->remove(), "Remove tremolo DSP" );
 		}
 		mTremoloEnabledPrev = mTremoloEnabled;
 	}
 	if ( mTremoloEnabled ) {
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_DEPTH,		mTremoloDepth );
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_DUTY,		mTremoloDuty );
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_FREQUENCY,	mTremoloFrequency );
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_PHASE,		mTremoloPhase * (float)getElapsedSeconds() );
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SHAPE,		mTremoloShape );
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SKEW,		mTremoloSkew );
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SPREAD,		mTremoloSpread );
-		mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SQUARE,		mTremoloSquare );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_DEPTH,		mTremoloDepth ) );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_DUTY,		mTremoloDuty ) );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_FREQUENCY,	mTremoloFrequency ) );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_PHASE,		mTremoloPhase * (float)getElapsedSeconds() ) );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SHAPE,		mTremoloShape ) );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SKEW,		mTremoloSkew ) );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SPREAD,		mTremoloSpread ) );
+		fmodCheck( mDspTremolo->setParameter( FMOD_DSP_TREMOLO_SQUARE,		mTremoloSquare ) );
 	}
 }
 
