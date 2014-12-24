@@ -14,8 +14,8 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
+		5F6D63491A4A8FF2001004EC /* GpGpuApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F6D63481A4A8FF2001004EC /* GpGpuApp.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		9D0AC58FD68B469FB380A90B /* GpGpu2App.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36156842FF414B3ABC5273D1 /* GpGpu2App.cpp */; };
 		AE0548031781FA3A00A3235B /* draw_frag.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AE0547FE1781FA3A00A3235B /* draw_frag.glsl */; };
 		AE0548041781FA3A00A3235B /* draw_vert.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AE0547FF1781FA3A00A3235B /* draw_vert.glsl */; };
 		AE0548051781FA3A00A3235B /* gpgpu1_frag.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AE0548001781FA3A00A3235B /* gpgpu1_frag.glsl */; };
@@ -36,10 +36,10 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		33FFBD48A96241C683F4ACDA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		36156842FF414B3ABC5273D1 /* GpGpu2App.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = GpGpu2App.cpp; path = ../src/GpGpu2App.cpp; sourceTree = "<group>"; };
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		5323E6B50EAFCA7E003A9687 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
 		5D88355EBE0D428EAE337296 /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
+		5F6D63481A4A8FF2001004EC /* GpGpuApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GpGpuApp.cpp; path = ../src/GpGpuApp.cpp; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* GpGpu2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GpGpu2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1974DBA4DAA491C95FE46BF /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = CinderApp.icns; path = ../resources/CinderApp.icns; sourceTree = "<group>"; };
 		AE0547FE1781FA3A00A3235B /* draw_frag.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = draw_frag.glsl; path = ../resources/draw_frag.glsl; sourceTree = "<group>"; };
@@ -75,7 +75,7 @@
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				36156842FF414B3ABC5273D1 /* GpGpu2App.cpp */,
+				5F6D63481A4A8FF2001004EC /* GpGpuApp.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -201,6 +201,8 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "GpGpu2" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -242,8 +244,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D0AC58FD68B469FB380A90B /* GpGpu2App.cpp in Sources */,
 				AE05480C1781FB8300A3235B /* MeshHelper.cpp in Sources */,
+				5F6D63491A4A8FF2001004EC /* GpGpuApp.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
